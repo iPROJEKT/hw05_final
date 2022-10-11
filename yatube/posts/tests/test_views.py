@@ -1,7 +1,9 @@
+from email.mime import image
 from math import ceil
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 from django.conf import settings
