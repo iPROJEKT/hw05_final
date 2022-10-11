@@ -128,7 +128,7 @@ def post_edit(request, post_id):
 def follow_index(request):
     posts_list = Post.objects.filter(author__following__user=request.user)
     page_number = request.GET.get('page')
-    context = {'page_obj': page_breakdown(page_number, posts_list),}
+    context = {'page_obj': page_breakdown(page_number, posts_list)}
     return render(request, 'posts/follow.html', context)
 
 
