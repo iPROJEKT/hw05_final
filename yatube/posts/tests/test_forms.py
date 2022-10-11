@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
