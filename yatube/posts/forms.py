@@ -1,22 +1,23 @@
-from django.forms import ModelForm
+from django import forms
 
 from .models import Post, Comment
 
 
-class PostForm(ModelForm):
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('text', 'group', 'image')
+        fields = ('text', 'group', 'image',)
         help_texts = {
             'text': 'post text',
             'group': 'group title',
             'image': 'image',
         }
 
-class CommentForm(ModelForm):
+
+class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ('text', 'author')
+        fields = ('text',)
         help_texts = {
             'text': 'Comment text',
         }

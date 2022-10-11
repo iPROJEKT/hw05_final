@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.conf import settings
 
-from .models import Post, Group, User, Comment
+from .models import Group, Post, User, Follow
 from .forms import PostForm, CommentForm
 
 
@@ -39,21 +39,36 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
+    """Выводит шаблон профайла пользователя"""
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
     page_number = request.GET.get('page')
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=author
+        ).exists()
+    else:
+        following = False
     context = {
         'author': author,
+        'following': following,
         'page_obj': page_breakdown(page_number, posts),
     }
     return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
-    posts = get_object_or_404(Post, id=post_id)
-    comments = posts.comments.select_related('comments')
+    """Выводит шаблон страницы поста."""
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentForm()
+    comments = post.comments.all()
+    if form.is_valid():
+        form = form.save(commit=False)
+        form.author = request.user
+        form.save()
     context = {
-        'posts': posts,
+        'post': post,
+        'form': form,
         'comments': comments,
     }
     return render(request, 'posts/post_detail.html', context)
@@ -62,12 +77,12 @@ def post_detail(request, post_id):
 @login_required
 def add_comment(request, post_id):
     """Обрабатывает создания поста."""
-    posts = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
-        comment.post = posts
+        comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
 
@@ -77,14 +92,14 @@ def post_create(request):
     """Выводит шаблон создания поста."""
     form_post = PostForm(request.POST or None)
     if form_post.is_valid():
-        form = form_post.save(commit=False)
-        form.author = request.user
-        form.save()
+        form_post = form_post.save(commit=False)
+        form_post.author = request.user
+        form_post.save()
         return redirect('posts:profile', request.user.username)
     context = {
         'form': form_post,
     }
-    return render(request, 'posts/post_create.html', context)
+    return render(request, 'posts/create_post.html', context)
 
 
 @login_required
@@ -95,15 +110,40 @@ def post_edit(request, post_id):
         return redirect('posts:post_detail', post_id=post.id)
     form = PostForm(
         request.POST or None,
-        instance=post,
         files=request.FILES or None,
+        instance=post
     )
     if form.is_valid():
         form.save()
+
         return redirect('posts:post_detail', post_id=post.id)
     context = {
-        'post': post,
         'form': form,
         'is_edit': True,
     }
-    return render(request, 'posts/post_create.html', context)
+    return render(request, 'posts/create_post.html', context)
+
+
+@login_required
+def follow_index(request):
+    posts_list = Post.objects.filter(author__following__user=request.user)
+    page_number = request.GET.get('page')
+    context = {'page_obj': page_breakdown(page_number, posts_list),}
+    return render(request, 'posts/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    if author != request.user:
+        Follow.objects.get_or_create(user=request.user, author=author)
+    return redirect('posts:profile', username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    Follow.objects.filter(
+        user=request.user,
+        author__username=username
+    ).delete()
+    return redirect('posts:profile', username=username)

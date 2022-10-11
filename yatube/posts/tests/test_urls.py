@@ -55,7 +55,7 @@ class URLTests(TestCase):
                 ),
             ),
             (
-                'posts/post_create.html',
+                'posts/create_post.html',
                 reverse(
                     'posts:post_create'
                 ),

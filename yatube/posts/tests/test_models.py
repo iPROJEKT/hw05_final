@@ -38,7 +38,7 @@ class PostModelTest(TestCase):
 
     def test_help_text(self):
         field_help_texts = [
-            ('text', 'text'),
+            ('text', 'Текст поста'),
             ('group', 'Группа')
         ]
         for name, field in field_help_texts:
