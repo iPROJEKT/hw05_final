@@ -2,7 +2,7 @@
 {% load thumbnail %}
 
 {% block title %}
-{{ post.text|slice:':30' }}
+{{ post.text|truncatechars:30 }}
 {% endblock %}
 {% block content %}
 <div class="row">

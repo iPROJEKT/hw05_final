@@ -192,23 +192,20 @@ class FollowViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='user1')
-        cls.user2 = User.objects.create_user(username='user2')
         cls.author = User.objects.create_user(username='author')
+        cls.post = Post.objects.create(
+            author=cls.author,
+            text='Текстовый текст',
+        )
+        cls.user = User.objects.create_user(username='user1')
 
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.authorized_client2 = Client()
-        self.authorized_client2.force_login(self.user2)
 
     def test_follower_see_new_post(self):
         """Новая запись пользователя появляется в ленте тех,
          кто на него подписан"""
-        new_post_follower = Post.objects.create(
-            author=self.author,
-            text='Текстовый текст',
-        )
         Follow.objects.create(
             user=self.user,
             author=self.author,
@@ -216,26 +213,23 @@ class FollowViewsTest(TestCase):
         response = self.authorized_client.get(
             reverse('posts:follow_index'))
         new_post = response.context['page_obj'].object_list[0]
-        self.assertEqual(new_post_follower.text, new_post.text)
+        self.assertEqual(self.post, new_post)
 
     def test_follow_another_user(self):
         """Авторизованный пользователь,
         может подписываться на других пользователей."""
         self.assertFalse(Follow.objects.filter(
             user=self.user,
-            author=self.user2
+            author=self.author
         ).exists())
-        follow_count = Follow.objects.count()
         self.authorized_client.get(reverse(
             'posts:profile_follow',
-            kwargs={'username': self.user2}
+            kwargs={'username': self.author}
         ))
-
         self.assertTrue(Follow.objects.filter(
             user=self.user,
-            author=self.user2
+            author=self.author
         ).exists())
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
 
     def test_unfollow(self):
         """Авторизованный пользователь,
@@ -251,7 +245,7 @@ class FollowViewsTest(TestCase):
         ).delete()
         self.authorized_client.get(reverse(
             'posts:profile_unfollow',
-            kwargs={'username': self.user2}
+            kwargs={'username': self.author}
         ))
         follow_count_after = Follow.objects.count()
         self.assertEqual(follow_count_before - 1, follow_count_after)
@@ -260,7 +254,7 @@ class FollowViewsTest(TestCase):
         """Пост не появляется в ленте подписок,
          если нет подписки на автора."""
         new_post_follower = Post.objects.create(
-            author=FollowViewsTest.author,
+            author=self.author,
             text='Текстовый текст')
         Follow.objects.create(
             user=self.user,

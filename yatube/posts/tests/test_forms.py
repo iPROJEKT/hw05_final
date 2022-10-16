@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -133,12 +131,6 @@ class CommentFormTest(TestCase):
             'post_id': self.post.id,
             'text': 'Тестовый коммент2',
         }
-        response = self.author_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.id}),
-            data=form_data,
-            follow=True
-        )
         comment_list = set(Comment.objects.values_list(
             'id', flat=True
         ))
@@ -147,17 +139,3 @@ class CommentFormTest(TestCase):
         comment = Comment.objects.get(id=list(comment_len)[0])
         self.assertEqual(comment.text, form_data['text'])
         self.assertEqual(comment.post_id, form_data['post_id'])
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_no_edit_comment(self):
-        """Проверка запрета комментирования не авторизованого пользователя"""
-        comment_list_before = set(Comment.objects.values_list(
-            'id', flat=True
-        ))
-        comment_list = set(Post.objects.values_list(
-            'id', flat=True
-        ))
-        comment_len = comment_list - comment_list_before
-        self.assertEqual(
-            len(comment_len), 0
-        )

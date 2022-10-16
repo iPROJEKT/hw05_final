@@ -14,11 +14,9 @@
     {% endthumbnail %}
     {{ post.text|linebreaks }}
     <a href="{% url 'posts:post_detail' post.id %}">подробная информация</a>
-    {% if post.group %}
-    {% if flag_group_link %}
+    {% if post.group and flag_group_link%}
     <br>
     <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
     </br>
-    {% endif %}
     {% endif %}
 </article>

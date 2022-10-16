@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.views.decorators.cache import cache_page
 
 from .models import Group, Post, User, Follow
 from .forms import PostForm, CommentForm
@@ -19,7 +20,6 @@ def index(request):
     )
     page_number = request.GET.get('page')
     context = {
-        'show_groups': True,
         'page_obj': page_breakdown(page_number, posts)
     }
     return render(request, 'posts/index.html', context)
@@ -59,17 +59,14 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     """Выводит шаблон страницы поста."""
-    post = get_object_or_404(Post, pk=post_id)
-    form = CommentForm()
-    comments = post.comments.all()
-    if form.is_valid():
-        form = form.save(commit=False)
-        form.author = request.user
-        form.save()
+    post = get_object_or_404(
+        Post.objects.select_related(), pk=post_id
+    )
+    comments = post.comments.select_related('author')
     context = {
         'post': post,
-        'form': form,
         'comments': comments,
+        'form': CommentForm()
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -92,9 +89,9 @@ def post_create(request):
     """Выводит шаблон создания поста."""
     form_post = PostForm(request.POST or None)
     if form_post.is_valid():
-        form_post = form_post.save(commit=False)
-        form_post.author = request.user
-        form_post.save()
+        form = form_post.save(commit=False)
+        form.author = request.user
+        form.save()
         return redirect('posts:profile', request.user.username)
     context = {
         'form': form_post,
@@ -126,9 +123,13 @@ def post_edit(request, post_id):
 
 @login_required
 def follow_index(request):
-    posts_list = Post.objects.filter(author__following__user=request.user)
+    posts_list = Post.objects.filter(
+        author__following__user=request.user
+    ).select_related(
+        'author', 'group'
+    )
     page_number = request.GET.get('page')
-    context = {'page_obj': page_breakdown(page_number, posts_list)}
+    context = {'page_obj': page_breakdown(page_number, posts_list),}
     return render(request, 'posts/follow.html', context)
 
 
