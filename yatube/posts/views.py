@@ -13,6 +13,7 @@ def page_breakdown(page_number, objects):
     return paginator.get_page(page_number)
 
 
+@cache_page(20 * 1, key_prefix='index_page')
 def index(request):
     """Выводит шаблон главной страницы."""
     posts = Post.objects.select_related(
@@ -43,15 +44,12 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
     page_number = request.GET.get('page')
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=author
-        ).exists()
-    else:
-        following = False
     context = {
         'author': author,
-        'following': following,
+        'following': request.user.is_authenticated and
+        Follow.objects.filter(
+            user=request.user, author=author
+        ).exists(),
         'page_obj': page_breakdown(page_number, posts),
     }
     return render(request, 'posts/profile.html', context)

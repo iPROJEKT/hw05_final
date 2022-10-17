@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 
 User = get_user_model()
@@ -105,10 +106,8 @@ class Follow(models.Model):
         verbose_name = 'Лента автора'
         verbose_name_plural = 'Лента авторов'
         constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    'user', 'author'
-                ],
-                name='unique_members'
+            models.CheckConstraint(
+                check=Q(author__startswith='user'),
+                name='user_is_author'
             )
         ]
