@@ -46,8 +46,8 @@ def profile(request, username):
     page_number = request.GET.get('page')
     context = {
         'author': author,
-        'following': request.user.is_authenticated and
-        Follow.objects.filter(
+        'following': request.user.is_authenticated
+        and Follow.objects.filter(
             user=request.user, author=author
         ).exists(),
         'page_obj': page_breakdown(page_number, posts),
@@ -127,7 +127,7 @@ def follow_index(request):
         'author', 'group'
     )
     page_number = request.GET.get('page')
-    context = {'page_obj': page_breakdown(page_number, posts_list),}
+    context = {'page_obj': page_breakdown(page_number, posts_list)}
     return render(request, 'posts/follow.html', context)
 
 
