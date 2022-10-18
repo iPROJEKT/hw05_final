@@ -236,15 +236,11 @@ class FollowViewsTest(TestCase):
     def test_unfollow(self):
         """Авторизованный пользователь,
         может отписываться от других пользователей."""
-        Follow.objects.create(
-            user=self.user,
-            author=self.author,
-        )
+        self.authorized_client.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': self.author}
+        ))
         follow_count_before = Follow.objects.count()
-        Follow.objects.filter(
-            user=self.user,
-            author=self.author,
-        ).delete()
         self.authorized_client.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': self.author}
