@@ -137,6 +137,12 @@ class CommentFormTest(TestCase):
             data=form_data,
             follow=True
         )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', kwargs={
+                'post_id': self.post.id
+            })
+        )
         comment_list = set(Comment.objects.values_list(
             'id', flat=True
         ))
