@@ -131,6 +131,12 @@ class CommentFormTest(TestCase):
             'post_id': self.post.id,
             'text': 'Тестовый коммент2',
         }
+        response = self.author_client.post(
+            reverse('posts:add_comment',
+                    kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
         comment_list = set(Comment.objects.values_list(
             'id', flat=True
         ))

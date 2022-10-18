@@ -11,6 +11,6 @@
         {% include 'includes/list_posts.html' with flag_group_link=True %}
         {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
-    {% endcache %}
     {% include 'includes/paginator.html' %}
+    {% endcache %}
 {% endblock %}

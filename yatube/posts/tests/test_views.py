@@ -194,13 +194,15 @@ class FollowViewsTest(TestCase):
         super().setUpClass()
         cls.author = User.objects.create_user(username='author')
         cls.post = Post.objects.create(
-            author=cls.author,
             text='Текстовый текст',
+            author=cls.author
         )
-        cls.user = User.objects.create_user(username='user1')
+        cls.user = User.objects.create_user(username='user')
+        cls.unfolof_user = User.objects.create_user(username='unfolof_user')
 
     def setUp(self):
         self.authorized_client = Client()
+        self.authorized_client2 = Client()
         self.authorized_client.force_login(self.user)
 
     def test_follower_see_new_post(self):
@@ -253,6 +255,7 @@ class FollowViewsTest(TestCase):
     def test_no_view_post_for_not_follower(self):
         """Пост не появляется в ленте подписок,
          если нет подписки на автора."""
+        self.authorized_client2.force_login(self.unfolof_user)
         new_post_follower = Post.objects.create(
             author=self.author,
             text='Текстовый текст')

@@ -13,7 +13,6 @@ def page_breakdown(page_number, objects):
     return paginator.get_page(page_number)
 
 
-@cache_page(20 * 1, key_prefix='index_page')
 def index(request):
     """Выводит шаблон главной страницы."""
     posts = Post.objects.select_related(
