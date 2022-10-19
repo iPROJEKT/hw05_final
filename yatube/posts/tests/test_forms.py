@@ -113,7 +113,6 @@ class CommentFormTest(TestCase):
             group=cls.group
         )
 
-
     def setUp(self):
         self.author_client = Client()
         self.author_client.force_login(self.author)
