@@ -198,11 +198,9 @@ class FollowViewsTest(TestCase):
             author=cls.author
         )
         cls.user = User.objects.create_user(username='user')
-        cls.unfolof_user = User.objects.create_user(username='unfolof_user')
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client2 = Client()
         self.authorized_client.force_login(self.user)
 
     def test_follower_see_new_post(self):
@@ -236,30 +234,33 @@ class FollowViewsTest(TestCase):
     def test_unfollow(self):
         """Авторизованный пользователь,
         может отписываться от других пользователей."""
-        self.authorized_client.get(reverse(
-            'posts:profile_follow',
-            kwargs={'username': self.author}
-        ))
-        follow_count_before = Follow.objects.count()
+        Follow.objects.create(
+            user=self.user,
+            author=self.author,
+        )
         self.authorized_client.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': self.author}
         ))
-        follow_count_after = Follow.objects.count()
-        self.assertEqual(follow_count_before - 1, follow_count_after)
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user,
+                author=self.author
+            )
+        )
 
     def test_no_view_post_for_not_follower(self):
         """Пост не появляется в ленте подписок,
          если нет подписки на автора."""
-        self.authorized_client2.force_login(self.unfolof_user)
+        self.authorized_client.force_login(self.author)
         new_post_follower = Post.objects.create(
             author=self.author,
             text='Текстовый текст')
         Follow.objects.create(
-            user=self.user,
-            author=self.author
+            user=self.author,
+            author=self.user
         )
-        response_unfollower = self.authorized_client2.get(
+        response_unfollower = self.authorized_client.get(
             reverse('posts:follow_index'))
         new_post_unfollower = response_unfollower.context['page_obj']
         self.assertNotIn(new_post_follower, new_post_unfollower)

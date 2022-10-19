@@ -112,11 +112,7 @@ class CommentFormTest(TestCase):
             author=cls.author,
             group=cls.group
         )
-        cls.comment = Comment.objects.create(
-            post_id=cls.post.id,
-            author=cls.author,
-            text='Тестовый коммент'
-        )
+
 
     def setUp(self):
         self.author_client = Client()
@@ -128,7 +124,7 @@ class CommentFormTest(TestCase):
             'id', flat=True
         ))
         form_data = {
-            'post_id': self.post.id,
+            'author': self.author,
             'text': 'Тестовый коммент2',
         }
         response = self.author_client.post(
@@ -150,4 +146,4 @@ class CommentFormTest(TestCase):
         self.assertEqual(len(comment_len), 1)
         comment = Comment.objects.get(id=list(comment_len)[0])
         self.assertEqual(comment.text, form_data['text'])
-        self.assertEqual(comment.post_id, form_data['post_id'])
+        self.assertEqual(comment.author, form_data['author'])

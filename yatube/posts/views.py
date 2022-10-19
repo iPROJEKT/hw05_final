@@ -30,8 +30,6 @@ def group_posts(request, slug):
     page_number = request.GET.get('page')
     context = {
         'group': group,
-        'posts': posts,
-        'show_groups': False,
         'page_obj': page_breakdown(page_number, posts)
     }
     return render(request, 'posts/group_list.html', context)
@@ -45,8 +43,8 @@ def profile(request, username):
     context = {
         'author': author,
         'following': request.user.is_authenticated
-        and Follow.objects.filter(
-            user=request.user, author=author
+        and author.following.filter(
+            user=request.user
         ).exists(),
         'page_obj': page_breakdown(page_number, posts),
     }
@@ -56,7 +54,8 @@ def profile(request, username):
 def post_detail(request, post_id):
     """Выводит шаблон страницы поста."""
     post = get_object_or_404(
-        Post.objects.select_related(), pk=post_id
+        Post.objects.select_related('group'),
+        pk=post_id
     )
     comments = post.comments.select_related('author')
     context = {
@@ -108,7 +107,6 @@ def post_edit(request, post_id):
     )
     if form.is_valid():
         form.save()
-
         return redirect('posts:post_detail', post_id=post.id)
     context = {
         'form': form,

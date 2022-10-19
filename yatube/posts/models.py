@@ -69,7 +69,7 @@ class Comment(models.Model):
         verbose_name='Текст поста',
         blank=True,
     )
-    author = author = models.ForeignKey(
+    author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='comments',
@@ -107,7 +107,7 @@ class Follow(models.Model):
         verbose_name_plural = 'Лента авторов'
         constraints = [
             models.CheckConstraint(
-                check=Q(author__startswith='user'),
-                name='user_is_author'
-            )
+                name="prevent_self_follow",
+                check=~models.Q(from_user=models.F("to_user")),
+            ),
         ]
