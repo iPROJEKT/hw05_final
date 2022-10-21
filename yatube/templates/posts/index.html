@@ -3,17 +3,15 @@
 
 {% block title %}
     Последние обновления на сайте
-{% endblock %}
+{% endblock %} 
 {% block content %}
     {% include 'includes/switcher.html' %}
     <h1>Последние обновления на сайте</h1>
-    {% for page_number in page_obj%}
-        {% cache 20 index_page=page_number %}
-        {% for post in page_obj %}
-            {% include 'includes/list_posts.html' with flag_group_link=True  %}
-            {% if not forloop.last %}<hr>{% endif %}
-        {% endfor %}
-        {% include 'includes/paginator.html' %}
-        {% endcache %}
+    {% cache 20 index_page_{%page_number%}%}
+    {% for post in page_obj %}
+        {% include 'includes/list_posts.html' with flag_group_link=True  %}
+        {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
+    {% include 'includes/paginator.html' %}
+    {% endcache %}
 {% endblock %}
