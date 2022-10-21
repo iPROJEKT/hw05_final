@@ -123,7 +123,7 @@ class CommentFormTest(TestCase):
             'id', flat=True
         ))
         form_data = {
-            'author': self.author,
+            'post_id': self.post.id,
             'text': 'Тестовый коммент2',
         }
         response = self.author_client.post(
@@ -145,4 +145,5 @@ class CommentFormTest(TestCase):
         self.assertEqual(len(comment_len), 1)
         comment = Comment.objects.get(id=list(comment_len)[0])
         self.assertEqual(comment.text, form_data['text'])
-        self.assertEqual(comment.author, form_data['author'])
+        self.assertEqual(comment.author, self.author)
+        self.assertEqual(comment.post.id, form_data['post_id'])

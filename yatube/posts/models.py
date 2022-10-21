@@ -107,6 +107,6 @@ class Follow(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="prevent_self_follow",
-                check=~models.Q(from_user=models.F("to_user")),
+                check=~models.Q(follower=models.F("following")),
             ),
         ]

@@ -7,11 +7,13 @@
 {% block content %}
     {% include 'includes/switcher.html' %}
     <h1>Последние обновления на сайте</h1>
-    {% cache 20 index_page and paginator %}
-    {% for post in page_obj %}
-        {% include 'includes/list_posts.html' with flag_group_link=True  %}
-        {% if not forloop.last %}<hr>{% endif %}
+    {% for page_number in page_obj%}
+        {% cache 20 index_page=page_number %}
+        {% for post in page_obj %}
+            {% include 'includes/list_posts.html' with flag_group_link=True  %}
+            {% if not forloop.last %}<hr>{% endif %}
+        {% endfor %}
+        {% include 'includes/paginator.html' %}
+        {% endcache %}
     {% endfor %}
-    {% include 'includes/paginator.html' %}
-    {% endcache %}
 {% endblock %}

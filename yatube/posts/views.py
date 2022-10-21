@@ -54,7 +54,7 @@ def profile(request, username):
 def post_detail(request, post_id):
     """Выводит шаблон страницы поста."""
     post = get_object_or_404(
-        Post.objects.select_related('group'),
+        Post.objects.select_related('group', 'author'),
         pk=post_id
     )
     comments = post.comments.select_related('author')
